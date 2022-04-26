@@ -4,7 +4,8 @@
 
 ## WRRC
 Add an image of your WRRC here
-(wrrc.png)
+(wrrc.png)![New Wireframe 2](https://user-images.githubusercontent.com/103366971/165404343-79760a36-b698-4920-b84b-a1aabf4f017a.png)
+
 ## Overview
 
 ## Getting Started
