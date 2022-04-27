@@ -9,11 +9,11 @@ const port = 3001
 //   res.send('Hello World!')
 // })
 
-app.get("/WelcometoFavoritePage",handl)
-app.get("/recipe",recipeFun)
+app.get("/favorite",handl)
+app.get("/",recipeFun)
 
 function handl(req,res){
-    res.send("Can you hear me now batter ?")
+    res.send("Welcome to Favorite Page ?")
 }
 
 function recipeFun(req,res){
