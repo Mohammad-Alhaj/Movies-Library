@@ -3,25 +3,44 @@ const RecipeData=require("./data.json")
 const express = require('express')
 const cors = require('cors')
 const axios = require('axios').default;
-require('dotenv').config()
+ const bodyParser = require('body-parser');
+
 const { send } = require("express/lib/response")
 const app = express()
-app.use(cors())
-const port = 3001
 
+
+
+const { Client } = require('pg');
+const { query } = require("express");
+const client = new Client(url)
+
+
+const port = 3001
+require('dotenv').config()
+const url=process.env.url
 const api_key1=process.env.api_key1
 
 const api_key2=process.env.api_key2
 
 
 
+//...........
+app.use(cors())
+ app.use(bodyParser.urlencoded({ extended: false }))
+ app.use(bodyParser.json())
+
+
+
+
+//routes
 app.get("/favorite",handle)
 app.get("/",recipeFun)
 app.get("/trending",handleRes)
 app.get("/search",handleSearch)
+app.post("/addMovie",handleAddMovie)
+app.get("/getMovies",handleGetMovie)
 
-
-//Function....
+//Function.................
 function handle(req,res){
     res.send("Welcome to Favorite Page ?")
 }
@@ -88,13 +107,64 @@ let NewRcs=new Recipe(RecipeData.title,RecipeData.poster_path,RecipeData.overvie
 res.json(NewRcs)
 }
 
+//addMove (post)and get movie
 
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+
+
+function handleAddMovie (req,res){
+
+console.log(req.body);
+   const {id,titel,release_date,poster_path,overview } = req.body
+
+   let sql = 'INSERT INTO addMovie(id,titel,release_date,poster_path,overview ) VALUES($1, $2, $3, $4,$5) RETURNING *;' 
+    let values = [id,titel,release_date,poster_path,overview]
+
+ client.query(sql,values)
+ .then((result)=>{
+
+  console.log(result.rows);
+   return res.json(result.rows);
+
+ })
+ .catch()
+
+
+}
+
+ function handleGetMovie(req,res){
+
+  let sql =` SELECT * from addMovie`
+
+client.query(sql).then((result)=>{
+
+console.log(result)
+res.json(result.rows)
+
+
+
+}).catch()
+
+
+
+
+
+
+
+}
+
+client.connect().then(()=>{
+
+   app.listen(port, () => {
+     console.log(`Example app listening on port ${port}`);
+  });
+
 })
 
 
+
+
+//first task
 function Recipe (title,poster_path,overview){
 this.title=title;
 this.poster_path=poster_path;
