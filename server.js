@@ -7,17 +7,17 @@ const axios = require('axios').default;
 
 const { send } = require("express/lib/response")
 const app = express()
+require('dotenv').config()
 
-
-
+const url=process.env.url
 const { Client } = require('pg');
 const { query } = require("express");
 const client = new Client(url)
 
 
-const port = 3001
-require('dotenv').config()
-const url=process.env.url
+const port = 3000
+
+
 const api_key1=process.env.api_key1
 
 const api_key2=process.env.api_key2
@@ -40,6 +40,10 @@ app.get("/search",handleSearch)
 app.post("/addMovie",handleAddMovie)
 app.get("/getMovies",handleGetMovie)
 
+app.put("/UPDATE/:idName",handleUpdate)//update
+app.delete("/DELETE",handleDelete)//delete
+app.get("/getMovie",handleGetMovieId)// getMovie by id 
+
 //Function.................
 function handle(req,res){
     res.send("Welcome to Favorite Page ?")
@@ -54,7 +58,7 @@ axios.get(`https://api.themoviedb.org/3/trending/all/week?api_key=${api_key1}&la
 
 let resultss=result.data.results.map(el=>{
 
-  return new Api(el.id, el.title,el.release_date, el.poster_path,el.overview ) 
+  return new Api(el.id, el.titel,el.release_date, el.poster_path,el.overview ) 
 
 })
 // res.send("Hello guye whatsup")
@@ -103,12 +107,11 @@ function recipeFun(req,res){
 
 //constructor
 
-let NewRcs=new Recipe(RecipeData.title,RecipeData.poster_path,RecipeData.overview)
+let NewRcs=new Recipe(RecipeData.titel,RecipeData.poster_path,RecipeData.overview)
 res.json(NewRcs)
 }
 
 //addMove (post)and get movie
-
 
 
 
@@ -132,6 +135,64 @@ console.log(req.body);
 
 }
 
+// Task 14.............
+//update function
+function handleUpdate(req,res){
+
+  const {idName}=req.params;
+  const {id,titel,release_date,poster_path, overview} = req.body
+
+  let sql = `UPDATE addMovie SET id=$1,titel =$2,release_date=$3,poster_path=$4,overview=$5 WHERE id =$6 RETURNING *;`
+   let values = [id,titel,release_date,poster_path, overview,idName]
+
+client.query(sql,values)
+.then((result)=>{
+
+ console.log(result.rows);
+  return res.json(result.rows);
+
+  
+})
+
+}
+
+//Deleting function....
+function handleDelete (req,res) {
+
+const{idName}=req.query;
+
+  let sql =`DELETE FROM addMovie WHERE id =$1`
+
+  let value=[idName];
+
+  client.query(sql, value).then(result => {
+    console.log(result);
+    res.send("deleted");
+}
+).catch(error => {
+    console.log(1, error);
+})
+}
+
+
+// To get movie by id
+function handleGetMovieId(req,res) {
+  const {idName} = req.query; 
+
+  let sql = `SELECT * FROM addMovie WHERE id =$1`;
+  let value=[idName];
+
+  client.query(sql, value).then(result => {
+    console.log(result);
+    res.json(result.rows)
+}
+).catch(error => {
+    console.log(1, error);
+})
+
+}
+
+// This function for listening server ....
  function handleGetMovie(req,res){
 
   let sql =` SELECT * from addMovie`
@@ -144,11 +205,6 @@ res.json(result.rows)
 
 
 }).catch()
-
-
-
-
-
 
 
 }
@@ -164,9 +220,13 @@ client.connect().then(()=>{
 
 
 
+
+
+
+
 //first task
-function Recipe (title,poster_path,overview){
-this.title=title;
+function Recipe (titel,poster_path,overview){
+this.titel=titel;
 this.poster_path=poster_path;
 this.overview=overview;
 
@@ -175,10 +235,10 @@ this.overview=overview;
 
 
 //3rd id constructor
-function Api (id,title,reData,poster_path,overview){
+function Api (id,titel,reData,poster_path,overview){
 
   this.id=id;
-  this.title=title;
+  this.titel=titel;
   this.reData=reData;
   this.poster_path=poster_path;
   this.overview=overview;
